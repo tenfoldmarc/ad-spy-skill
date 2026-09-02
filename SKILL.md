@@ -59,7 +59,25 @@ For each competitor to refresh:
 bash [skill-dir]/scrape.sh [page_id] "[outputDir]/spy/[competitor-slug]/[YYYY-MM-DD]" 20 [country]
 ```
 
-This opens the Ad Library sorted by impressions, scrolls, and writes `ads.tsv` (library_id, start_date, versions, media_type, media_url, text) plus downloads up to 20 media files to `media/`.
+This opens the Ad Library sorted by impressions, scrolls, and writes `ads.tsv` with one row per ad and these columns, already split apart:
+
+| Column | What it is |
+|---|---|
+| `library_id` | Meta's ID for the ad |
+| `start_date` | "Started running on" date |
+| `versions` | how many ads share this creative and text |
+| `media_type` | `image` or `video` |
+| `media_url` | direct file URL (also downloaded to `media/[library_id].jpg|mp4`) |
+| `primary_text` | the ad body above the media, full length, line breaks shown as ` \| ` |
+| `link_domain` | the domain shown under the media |
+| `headline` | the bold link title under the media |
+| `description` | the smaller line under the headline (often empty) |
+| `cta` | the button label |
+| `raw_text` | the whole card, in case the parser missed something |
+
+Some ads have no link block (message ads, or the card hasn't rendered it). Then domain, headline, and description are empty. Say so in the ad record rather than guessing. If `raw_text` shows a headline the parser missed, take it from there.
+
+Up to 20 media files are downloaded to `media/`.
 
 Then dedupe: read `[outputDir]/spy/[competitor-slug]/seen.tsv` (library_id, first_seen, start_date). Anything already in it is not new. Append the new IDs. Only process new ads in full; for old ones just update "still running" status. This keeps refreshes fast.
 
@@ -77,24 +95,35 @@ python3 [skill-dir]/transcribe.py "[outputDir]/spy/[slug]/[date]/media/[library_
 ```
 Then read the transcript and open the three frames. Write down: spoken hook (first sentence), on-screen hook text from the 0.5s frame, format (talking head, UGC, b-roll voiceover, screen recording, skit), full transcript, length.
 
-**All ads:** from the card text, pull the primary text opener (first 125 characters), the link headline if present, and the CTA.
-
-Save one markdown block per ad to `[outputDir]/spy/[slug]/ads.md` (append-only, newest first):
+**All ads:** save the copy in full and label every piece so it's clear which is which. Save one markdown block per ad to `[outputDir]/spy/[slug]/ads.md` (append-only, newest first):
 
 ```
 ## [Library ID] | started [date] | [N] versions | [image/video] | status: active
+
+### The copy (verbatim)
+- **Primary text opener** (first 125 characters, what shows before "See more"): "..."
+- **Primary text, full:**
+  [the whole body, line breaks kept]
+- **Link domain:** ...
+- **Headline** (bold title under the media): "..."
+- **Description** (small line under the headline): "..." or (none)
+- **CTA button:** ...
+
+### The creative
+- **Media:** media/[id].[ext]
+- **Format:** [text-only / founder + headline / testimonial card / offer card / UGC video / talking head / etc.]
+- **On-image or on-screen text** (verbatim): "..."
+- **Spoken hook** (video only, first sentence): "..."
+- **Full transcript** (video only):
+  [transcript]
+- **Frames:** media/[id]-frame-0.5.jpg, -3.jpg, -10.jpg
+
+### The read
 - Angle: [belief shift / root cause / case study / callout / offer / story / mistake / contrarian / demo]
-- Spoken hook: "..."
-- On-screen hook: "..."
-- Opener (primary text): "..."
-- Headline: "..."
-- Format: ...
 - Mechanism named: ...
 - Proof used: ...
-- CTA: ...
 - Retargeting signals: [none / list]
-- Transcript: [full, video only]
-- Media: media/[id].[ext]
+- Notes: ...
 ```
 
 ---

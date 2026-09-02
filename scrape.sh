@@ -2,7 +2,11 @@
 # Scrape a competitor's active ads from the Meta Ad Library.
 # usage: scrape.sh <page_id_or_library_url> <out_dir> [max_ads=20] [country=ALL]
 # Output: <out_dir>/ads.tsv (one row per ad) + downloaded media in <out_dir>/media/
-# Columns: library_id, start_date, versions, media_type, media_url, text
+# Columns: library_id, start_date, versions, media_type, media_url, primary_text, link_domain, headline, description, cta, raw_text
+#   primary_text = the ad body above the media (line breaks shown as " | ")
+#   headline     = the bold link title under the media
+#   description  = the smaller line under the headline (often empty)
+#   cta          = the button label (Learn more, Sign up, Book now, ...)
 # Requires: npx agent-browser (npm i -g agent-browser or npx works), curl
 
 set -u
@@ -31,14 +35,37 @@ npx agent-browser eval "(()=>{
     let type='image',src='';
     if(v){type='video';src=v.src||v.currentSrc||'';}
     else{const im=[...el.querySelectorAll('img')].filter(i=>i.naturalWidth>250);if(im.length)src=im[0].src;}
-    out.push([id,start,ver,type,src,txt.slice(0,3000)].join('\\t'));
+    // Parse the card into primary text / domain / headline / description / CTA
+    const CTA=/^(Learn [Mm]ore|Sign [Uu]p|Shop [Nn]ow|Book [Nn]ow|Apply [Nn]ow|Send [Mm]essage|Download|Get [Oo]ffer|Get [Qq]uote|Watch [Mm]ore|Subscribe|Contact [Uu]s|Order [Nn]ow|Get [Ss]tarted|See [Mm]ore|Play [Gg]ame|Install [Nn]ow|Listen [Nn]ow|Register|Buy [Nn]ow|Get [Aa]ccess|Request [Tt]ime|Send WhatsApp [Mm]essage|Open [Ll]ink|Read [Mm]ore|Donate [Nn]ow|Remind [Mm]e)$/;
+    const DOM=/^[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+(\\/\\S*)?$/;
+    const parts=txt.split(' | ').map(s=>s.trim()).filter(s=>s&&s!=='\\u200b');
+    let si=parts.indexOf('Sponsored');
+    let body=[],domain='',headline='',desc='',cta='';
+    if(si>=0){
+      let i=si+1;
+      let boundary=false;
+      for(;i<parts.length;i++){const p=parts[i];
+        if(/^\\d+:\\d\\d \\/ \\d+:\\d\\d$/.test(p)){boundary=true;i++;break;}   // video timer marks end of body
+        if(DOM.test(p)&&p===p.toUpperCase()&&p.length<60){domain=p;boundary=true;i++;break;}
+        if(CTA.test(p)){cta=p;i++;break;}
+        body.push(p);
+      }
+      let rest=parts.slice(i).filter(p=>!/^\\d+:\\d\\d \\/ \\d+:\\d\\d$/.test(p));
+      if(!domain&&rest.length){const d=rest.findIndex(p=>DOM.test(p)&&p===p.toUpperCase()&&p.length<60);if(d>=0){domain=rest[d];rest=rest.slice(d+1);}}
+      if(boundary){
+        if(rest[0]&&!CTA.test(rest[0])){headline=rest[0];}
+        if(rest[1]&&!CTA.test(rest[1])){desc=rest[1];}
+        const c=rest.find(p=>CTA.test(p));if(c)cta=c;
+      }
+    }
+    out.push([id,start,ver,type,src,body.join(' | '),domain,headline,desc,cta,txt.slice(0,6000)].join('\\t'));
   });
   return out.join('\\n');
 })()" 2>/dev/null | sed 's/^"//;s/"$//; s/\\n/\n/g; s/\\t/\t/g; s/\\"/"/g' > "$OUT/ads.tsv"
 
 N=$(grep -c . "$OUT/ads.tsv")
 i=0
-while IFS=$'\t' read -r id start ver type src txt; do
+while IFS=$'\t' read -r id start ver type src body domain headline desc cta txt; do
   [ $i -ge "$MAX" ] && break
   [ -z "$src" ] && continue
   ext="jpg"; [ "$type" = "video" ] && ext="mp4"
