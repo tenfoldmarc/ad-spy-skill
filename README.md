@@ -99,7 +99,7 @@ Build angles 1 and 3, copy and image.
 - `scrape.sh`: pulls ads and media from an Ad Library page
 - `transcribe.py`: audio to text plus frame grabs (local Whisper or OpenAI API)
 
-Your profile, competitor list, and everything pulled live on your machine at `~/.claude/ad-profiles/` and your output folder. Shared with [ad-copy](https://github.com/tenfoldmarc/ad-copy-skill), [video-ad-copy](https://github.com/tenfoldmarc/video-ad-copy-skill), and [ad-image-gen](https://github.com/tenfoldmarc/ad-image-gen-skill).
+Your profile, competitor list, and everything pulled live on your machine at `~/.claude/ad-profiles/` and your output folder. Shared with [ad-copy](https://github.com/tenfoldmarc/ad-copy-skill), [video-ad-copy](https://github.com/tenfoldmarc/video-ad-copy-skill), [ad-image-gen](https://github.com/tenfoldmarc/ad-image-gen-skill), [vsl-script](https://github.com/tenfoldmarc/vsl-script-skill), and [sales-page](https://github.com/tenfoldmarc/sales-page-skill).
 
 ---
 

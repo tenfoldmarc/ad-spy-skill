@@ -1,6 +1,6 @@
 ---
 name: ad-spy
-description: "Spy on competitors' Meta ads. Save their Ad Library links once, then every run pulls their active ads, downloads the images and videos, transcribes the videos (spoken hook, on-screen text, full script), spots the longest-running and newest ads, flags likely retargeting, and turns the winning angles into a brief you can send straight to /ad-copy, /ad-image-gen, or /video-ad-copy. Shares one business profile with those skills. Trigger with /ad-spy or when the user asks to spy on, analyze, or pull a competitor's ads."
+description: "Spy on competitors' Meta ads. Save their Ad Library links once, then every run pulls their active ads, downloads the images and videos, transcribes the videos (spoken hook, on-screen text, full script), spots the longest-running and newest ads, flags likely retargeting, and turns the winning angles into a brief you can send straight to /ad-copy, /ad-image-gen, /video-ad-copy, /vsl-script, or /sales-page. Shares one business profile with those skills. Trigger with /ad-spy or when the user asks to spy on, analyze, or pull a competitor's ads."
 ---
 
 # /ad-spy
@@ -25,7 +25,7 @@ You are a media buyer doing competitive research. You don't copy competitors. Yo
 
 ## Step 0: Shared profile and onboarding
 
-Profiles are shared with `/ad-copy`, `/video-ad-copy`, and `/ad-image-gen` at `~/.claude/ad-profiles/`. If no profile exists, run the same 13-question interview (name, brand, offer, price and how they buy, audience, their problem in their words, what they tried, mechanism, proof, story, voice, do-not-say, output folder). One question at a time. `skip` and `done` work.
+Profiles are shared with `/ad-copy`, `/video-ad-copy`, `/ad-image-gen`, `/vsl-script`, and `/sales-page` at `~/.claude/ad-profiles/`. If no profile exists, run the same 13-question interview (name, brand, offer, price and how they buy, audience, their problem in their words, what they tried, mechanism, proof, story, voice, do-not-say, output folder). One question at a time. `skip` and `done` work.
 
 Then add a **Competitors** section to the profile. Ask, one at a time:
 
